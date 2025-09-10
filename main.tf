@@ -96,51 +96,42 @@ resource "aws_internet_gateway" "internet_gateway" {
   }
 }
 
-/*
-#Create EIP for NAT Gateway
-resource "aws_eip" "nat_gateway_eip" {
-  domain     = "vpc"
-  depends_on = [aws_internet_gateway.internet_gateway]
-  tags = {
-    Name = "demo_igw_eip"
+resource "aws_s3_bucket" "my-new-S3-bucket" {   
+  bucket = "my-new-tf-test-bucket-${random_id.randomness.hex}"
+
+  tags = {     
+    Name = "My S3 Bucket"     
+    Purpose = "Intro to Resource Blocks Lab"   
+  } 
+}
+
+resource "aws_s3_bucket_ownership_controls" "my_new_bucket_acl" {   
+  bucket = aws_s3_bucket.my-new-S3-bucket.id  
+  rule {     
+    object_ownership = "BucketOwnerPreferred"   
   }
 }
 
-#Create NAT Gateway
-resource "aws_nat_gateway" "nat_gateway" {
-  depends_on    = [aws_subnet.public_subnets]
-  allocation_id = aws_eip.nat_gateway_eip.id
-  subnet_id     = aws_subnet.public_subnets["public_subnet_1"].id
+
+resource "aws_security_group" "my-new-security-group" {
+  name        = "web_server_inbound"
+  description = "Allow inbound traffic on tcp/443"
+  vpc_id      = aws_vpc.vpc.id
+
+  ingress {
+    description = "Allow 443 from the Internet"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   tags = {
-    Name = "demo_nat_gateway"
+    Name    = "web_server_inbound"
+    Purpose = "Intro to Resource Blocks Lab"
   }
 }
-*/
 
-
-# Terraform Data Block - To Lookup Latest Ubuntu 20.04 AMI Image
-data "aws_ami" "ubuntu" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["099720109477"]
-}
-
-# Terraform Resource Block - To Build EC2 instance in Public Subnet
-resource "aws_instance" "web_server" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.micro"
-  subnet_id     = aws_subnet.public_subnets["public_subnet_1"].id
-  tags = {
-    Name = "Ubuntu EC2 Server"
-  }
+resource "random_id" "randomness" {
+  byte_length = 16
 }
