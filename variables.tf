@@ -46,3 +46,9 @@ variable "variables_sub_auto_ip" {
   type        = bool
   default     = true
 }
+
+variable "environment" {
+  description = "test or dev environment"
+  type        = string
+  default     = "dev"
+}
