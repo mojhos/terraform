@@ -252,12 +252,23 @@ resource "aws_instance" "ubuntu_server" {
 */
 
 module "server" {
-  source          = "./server"
-  ami             = data.aws_ami.ubuntu.id
-  subnet_id       = aws_subnet.public_subnets["public_subnet_3"].id
+  source    = "./modules/server"
+  ami       = data.aws_ami.ubuntu.id
+  subnet_id = aws_subnet.public_subnets["public_subnet_3"].id
   security_groups = [
     aws_security_group.vpc-ping.id,
     aws_security_group.ingress-ssh.id,
     aws_security_group.vpc-web.id
   ]
 }
+
+output "public_ip" {
+  value = module.server.public_ip
+
+}
+
+output "public_dns" {
+  value = module.server.public_dns
+
+}
+
