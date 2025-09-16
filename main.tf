@@ -214,6 +214,7 @@ resource "aws_security_group" "vpc-ping" {
   }
 }
 
+/*
 resource "aws_instance" "ubuntu_server" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = "t3.micro"
@@ -235,10 +236,10 @@ resource "aws_instance" "ubuntu_server" {
     ignore_changes = [security_groups]
   }
 
-  /*provisioner "local-exec" {
+  #provisioner "local-exec" {
     #command = "chmod 600 ${local_file.private_key_pem.filename}"
     #command = "$env:privateKeyPath = 'C:\\Users\\Mojtaba\\projects\\terraform\\MyAWSKey.pem'; icacls $privateKeyPath /inheritance:r /grant:r '$($env:USERNAME):(R)'; icacls $privateKeyPath /grant:r 'SYSTEM:(R)';"
-  }*/
+  #}
 
   provisioner "remote-exec" {
     inline = [
@@ -247,4 +248,16 @@ resource "aws_instance" "ubuntu_server" {
       "sudo sh /tmp/assets/setup-web.sh",
     ]
   }
+}
+*/
+
+module "server" {
+  source          = "./server"
+  ami             = data.aws_ami.ubuntu.id
+  subnet_id       = aws_subnet.public_subnets["public_subnet_3"].id
+  security_groups = [
+    aws_security_group.vpc-ping.id,
+    aws_security_group.ingress-ssh.id,
+    aws_security_group.vpc-web.id
+  ]
 }
